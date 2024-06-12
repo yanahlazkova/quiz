@@ -11,6 +11,7 @@ client = MongoClient(connection_string)
 
 # Получение доступа к базе данных (например, 'test')
 db_quiz = client.quiz
+print(type(db_quiz))
 db_sample_mflix = client.sample_mflix
 
 # Проверка подключения, вывод списка коллекций в базе данных
