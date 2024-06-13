@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import main_settings
 
 class MyWindow(ctk.CTk):
     def __init__(self, db_quiz, db_sample_mflix):
@@ -28,7 +29,8 @@ class MyWindow(ctk.CTk):
                                                      command=self.clear_collection)
         self.button_clear_collection.pack(pady=5)
 
-        self.button_clear_questions = ctk.CTkButton(self.frame_clear_collection, text="Clear all questions")
+        self.button_clear_questions = ctk.CTkButton(self.frame_clear_collection, text="Clear all questions",
+                                                    command=self.clear_questions)
         self.button_clear_questions.pack(pady=5)
 
         # Add Collection Widgets
@@ -38,7 +40,8 @@ class MyWindow(ctk.CTk):
                                                    command=self.add_collection)
         self.button_add_collection.pack(pady=5)
 
-        self.button_add_questions = ctk.CTkButton(self.frame_add_collection, text="Add questions")
+        self.button_add_questions = ctk.CTkButton(self.frame_add_collection, text="Add questions",
+                                                  command=self.add_questions)
         self.button_add_questions.pack(pady=5)
 
 
@@ -46,6 +49,14 @@ class MyWindow(ctk.CTk):
         collection_users = self.db_quiz.users
         collection_users.delete_many({})
         print(collection_users.count_documents({}))
+
+    def clear_questions(self):
+        collection_questions = self.db_quiz.questions
+        collection_answers = self.db_quiz.answer_options
+        collection_questions.delete_many({})
+        collection_questions.delete_many({})
+        print(collection_questions.count_documents({}))
+        print(collection_answers.count_documents({}))
 
     def add_collection(self):
         collections_users_db_sample_mflix = self.db_sample_mflix.users
@@ -56,3 +67,33 @@ class MyWindow(ctk.CTk):
         collections_users_db_quiz.insert_many(users_list)
 
         print("Add collection", collections_users_db_quiz.count_documents({}))
+
+
+    def add_questions(self):
+        source_questions = main_settings.load_data_from_file()
+        collection_questions = self.db_quiz.questions
+        collection_answers = self.db_quiz.answer_options
+
+        # Разделение данных на две части
+        questions = []
+        answers = []
+
+        for item in source_questions:
+            # Добавление данных в коллекцию вопросов
+            question = {
+                "order": item["order"],
+                "text": item["text"]
+            }
+            questions.append(question)
+
+            # Добавление данных в коллекцию ответов
+            answer = {
+                "order": item["order"],
+                "answers": item["answer"]
+            }
+            answers.append(answer)
+
+        collection_questions.insert_many(questions)
+        collection_answers.insert_many(answers)
+
+        print("Add questions", collection_questions.count_documents({}))
