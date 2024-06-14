@@ -1,13 +1,16 @@
 import customtkinter as ctk
-import myFastAPI as myAPI
+import os, json
+import api_requests
+import server
+
+filename = 'questions.json'
+
 
 class MyWindow(ctk.CTk):
-    def __init__(self, db_quiz, db_sample_mflix):
+    def __init__(self):
 
         super().__init__()
 
-        self.db_sample_mflix = db_sample_mflix
-        self.db_quiz = db_quiz
         ctk.set_appearance_mode("light")  # Настройка внешнего вида (может быть "light", "dark", или "system")
         ctk.set_default_color_theme("blue")  # Установка темы
 
@@ -46,54 +49,42 @@ class MyWindow(ctk.CTk):
 
 
     def clear_collection(self):
-        collection_users = self.db_quiz.users
-        collection_users.delete_many({})
-        print(collection_users.count_documents({}))
+        pass
 
     def clear_questions(self):
-        collection_questions = self.db_quiz.questions
-        collection_answers = self.db_quiz.answer_options
-        collection_questions.delete_many({})
-        collection_questions.delete_many({})
-        print(collection_questions.count_documents({}))
-        print(collection_answers.count_documents({}))
+        pass
 
     def add_collection(self):
-        collections_users_db_sample_mflix = self.db_sample_mflix.users
-        collections_users_db_quiz = self.db_quiz.users
-
-        users_list = list(collections_users_db_sample_mflix.find({}))
-
-        collections_users_db_quiz.insert_many(users_list)
-
-        print("Add collection", collections_users_db_quiz.count_documents({}))
-
+        pass
 
     def add_questions(self):
-        source_questions = myAPI.load_data_from_file()
-        collection_questions = self.db_quiz.questions
-        collection_answers = self.db_quiz.answer_options
+        """ добавление вопросов в БД"""
+        # получает данные из файла json
+        with open(filename, 'r', encoding='utf-8') as file:
+            questions = json.load(file)
 
-        # Разделение данных на две части
-        questions = []
-        answers = []
+        list_questions = []
+        list_answers = []
 
-        for item in source_questions:
+        for item in questions:
             # Добавление данных в коллекцию вопросов
             question = {
                 "order": item["order"],
                 "text": item["text"]
             }
-            questions.append(question)
+            list_questions.append(question)
 
             # Добавление данных в коллекцию ответов
             answer = {
                 "order": item["order"],
                 "answers": item["answer"]
             }
-            answers.append(answer)
+            list_answers.append(answer)
 
-        collection_questions.insert_many(questions)
-        collection_answers.insert_many(answers)
+        # api_requests.add_questions(questions)
+        # payload = {"questions": list_questions, "answers": list_answers}
+        api_requests.add_questions(list_questions, list_answers)
 
-        print("Add questions", collection_questions.count_documents({}))
+if __name__ == "__main__":
+    app = MyWindow()
+    app.mainloop()

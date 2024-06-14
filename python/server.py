@@ -16,6 +16,7 @@ db_sample_mflix = client.sample_mflix
 
 # Проверка подключения, вывод списка коллекций в базе данных
 print(db_quiz.list_collection_names())
+print(db_quiz.url)
 print(db_sample_mflix.list_collection_names())
 
 
