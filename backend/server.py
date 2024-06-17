@@ -36,61 +36,66 @@ class Question(BaseModel):
     order: int
     text: str
 
+
 class AnswerOption(BaseModel):
     order: int
     answers: Dict[str, str]
+
 
 class QuestionsAndAnswers(BaseModel):
     questions: List[Question]
     answers: List[AnswerOption]
 
 
-@app.get('/questions')
+@app.get('/questions', response_model=List[Dict])
 async def get_all_questions():
     """Get all questions"""
-    questions = list(collection_questions.find({}))
-    answers = list(collection_answers.find({}))
+    # questions = list(collection_questions.find({}, {'_id': 0}))
+    # answers = list(collection_answers.find({}, {'_id': 0}))
 
-    combine_dict = []
-    for question in questions:
-        del question['_id']
-    for question in questions:
-        logger.info(question)
-    # pipeline = [
-    #     {
-    #         '$lookup': {
-    #             'from': 'answer_options',
-    #             'localField': 'answers',
-    #             'foreignField': 'order',
-    #             'as': 'answer_texts'
-    #         }
-    #     },
-    #     {
-    #         '$project': {
-    #             'order': 1,
-    #             'text': 1,
-    #             'answers': {
-    #                 '$map': {
-    #                     'input': '$answers',
-    #                     'as': 'ans',
-    #                     'in': {
-    #                         '$arrayElemAt': [
-    #                             '$answer_texts.text',
-    #                             {
-    #                                 '$indexOfArray': ['$answer_texts.order', '$$ans']
-    #                             }
-    #                         ]
-    #                     }
-    #                 }
-    #             }
-    #         }
-    #     }
-    # ]
-    #
-    # result = list(collection_questions.aggregate(pipeline))
-    # logger.info(result)
-    #
-    # return dumps(result)
+    try:
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "answer_options",
+                    "localField": "order",
+                    "foreignField": "order",
+                    "as": "answers"
+                }
+            },
+            {
+                "$addFields": {
+                    "answers": {
+                        "$arrayElemAt": ["$answers.answers", 0]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$_id",
+                    "order": {"$first": "$order"},
+                    "text": {"$first": "$text"},
+                    "answers": {"$first": "$answers"}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "order": 1,
+                    "text": 1,
+                    "answers": 1
+                }
+            }
+        ]
+
+        questions_with_answers = list(collection_questions.aggregate(pipeline))
+        return questions_with_answers
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+        # return dumps(questions_with_answers)
 
     # questions = list(collection_questions.find({}))
     # answers = list(collection_answers.find({}))
