@@ -15,7 +15,7 @@ def add_questions(questions, answers):
         print(f"Failed to add questions and answers: {response.status_code}, {response.text}")
 
 
-def get_all_questions():
+def clear_all_questions():
     response = requests.get(f"{API_URL}/questions")
     if response.status_code == 200:
         return response.json()

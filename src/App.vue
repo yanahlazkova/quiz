@@ -79,6 +79,18 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+const ServerUrl = 'http://127.0.0.1:8000';
+
+async function getQuestions() {
+  const url = `${ServerUrl}/questions`;
+  const response = await fetch(`${url}`);
+  const data = await response.json()
+  console.log(data);
+  return data
+}
+
+getQuestions()
+
 const quiz = {
   user: "Dave",
   questions: [
