@@ -52,7 +52,7 @@ class MyWindow(ctk.CTk):
         pass
 
     def clear_questions(self):
-        pass
+        api_requests.clear_all_questions()
 
     def add_collection(self):
         pass
@@ -63,27 +63,7 @@ class MyWindow(ctk.CTk):
         with open(filename, 'r', encoding='utf-8') as file:
             questions = json.load(file)
 
-        list_questions = []
-        list_answers = []
-
-        for item in questions:
-            # Добавление данных в коллекцию вопросов
-            question = {
-                "order": item["order"],
-                "text": item["text"]
-            }
-            list_questions.append(question)
-
-            # Добавление данных в коллекцию ответов
-            answer = {
-                "order": item["order"],
-                "answers": item["answer"]
-            }
-            list_answers.append(answer)
-
-        # api_requests.add_questions(questions)
-        # payload = {"questions": list_questions, "answers": list_answers}
-        api_requests.add_questions(list_questions, list_answers)
+        api_requests.add_questions(questions)
 
 if __name__ == "__main__":
     app = MyWindow()

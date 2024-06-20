@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from typing import List, Dict
 from fastapi.middleware.cors import CORSMiddleware
 import logging
-from bson import ObjectId
-from bson.json_util import dumps
+from decoder import Decoder
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO)
@@ -34,109 +33,79 @@ collection_answers = db.answer_options
 
 class Question(BaseModel):
     order: int
-    text: str
+    question: str
+    answers: list[str]
+    correct_answer: int
 
 
-class AnswerOption(BaseModel):
-    order: int
-    answers: Dict[str, str]
-
-
-class QuestionsAndAnswers(BaseModel):
+class QuestionList(BaseModel):
     questions: List[Question]
-    answers: List[AnswerOption]
 
 
 @app.get('/questions', response_model=List[Dict])
 async def get_all_questions():
+    logger.info("get questions")
     """Get all questions"""
-    # questions = list(collection_questions.find({}, {'_id': 0}))
-    # answers = list(collection_answers.find({}, {'_id': 0}))
+    questions = list(collection_questions.find({})) #, {'_id': 0}))
 
-    try:
-        pipeline = [
-            {
-                "$lookup": {
-                    "from": "answer_options",
-                    "localField": "order",
-                    "foreignField": "order",
-                    "as": "answers"
-                }
-            },
-            {
-                "$addFields": {
-                    "answers": {
-                        "$arrayElemAt": ["$answers.answers", 0]
-                    }
-                }
-            },
-            {
-                "$group": {
-                    "_id": "$_id",
-                    "order": {"$first": "$order"},
-                    "text": {"$first": "$text"},
-                    "answers": {"$first": "$answers"}
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0,
-                    "order": 1,
-                    "text": 1,
-                    "answers": 1
-                }
-            }
-        ]
+    # try:
+    #     pipeline = [
+    #         {
+    #             "$lookup": {
+    #                 "from": "answer_options",
+    #                 "localField": "order",
+    #                 "foreignField": "order",
+    #                 "as": "answers"
+    #             }
+    #         },
+    #         {
+    #             "$addFields": {
+    #                 "answers": {
+    #                     "$arrayElemAt": ["$answers.answers", 0]
+    #                 }
+    #             }
+    #         },
+    #         {
+    #             "$group": {
+    #                 "_id": "$_id",
+    #                 "order": {"$first": "$order"},
+    #                 "text": {"$first": "$text"},
+    #                 "answers": {"$first": "$answers"}
+    #             }
+    #         },
+    #         {
+    #             "$project": {
+    #                 "_id": 0,
+    #                 "order": 1,
+    #                 "text": 1,
+    #                 "answers": 1
+    #             }
+    #         }
+    #     ]
 
-        questions_with_answers = list(collection_questions.aggregate(pipeline))
-        return questions_with_answers
-
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-        # return dumps(questions_with_answers)
-
-    # questions = list(collection_questions.find({}))
-    # answers = list(collection_answers.find({}))
-    # # Создаем словарь для временного хранения данных по ключу "order"
-    # combined_dict = {}
+        # questions_with_answers = list(collection_questions.aggregate(pipeline))
+    decoder_question_dict = Decoder.decryption(questions)
+    logger.info(decoder_question_dict)
+    return decoder_question_dict
     #
-    # # Добавляем ответы в словарь
-    # for answer in answers:
-    #     order = answer["order"]
-    #     if order not in combined_dict:
-    #         combined_dict[order] = {}
-    #     combined_dict[order].update(answer)
-    #
-    # # Добавляем вопросы в словарь
-    # for question in questions:
-    #     order = question["order"]
-    #     if order not in combined_dict:
-    #         combined_dict[order] = {}
-    #     combined_dict[order].update(question)
-    #
-    #     # Перетворюємо тимчасовий словник на список
-    #     combined_list = list(combined_dict.values())
-    #     logger.info((combined_list))
-    #     questions_json = dumps(combined_list)  # Використовуємо bson.json_util.dumps для серіалізації BSON у JSON
-    #     # logger.info(questions_json)
-    #     return questions_json
+    # except Exception as e:
+    #     logger.error(f"An error occurred: {e}")
+    #     raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @app.post('/questions', status_code=201)
-async def add_questions_and_answers(data: QuestionsAndAnswers):
+async def add_questions(data: QuestionList):
     """Upload questions and answers"""
     print('server')
     questions = [q.dict() for q in data.questions]
-    answers = [a.dict() for a in data.answers]
 
     collection_questions.insert_many(questions)
-    collection_answers.insert_many(answers)
-    return {"message": "Questions and answers added successfully"}
+    return {"message": "Questions added successfully"}
 
-@app.delete('/questions')
+@app.delete('/questions', status_code=200)
 async def clear_all_questions():
+    logger.info("Clear")
     collection_questions.delete_many({})
     collection_answers.delete_many({})
-    print(collection_questions.count_documents({}))
-    print(collection_answers.count_documents({}))
+    logger.info(collection_questions.count_documents({}))
+

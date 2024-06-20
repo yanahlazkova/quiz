@@ -66,10 +66,10 @@ async function getQuestions() {
   console.log(data);
   // Обработка полученных данных
   const formattedQuestions = data.map((question) => ({
-    text: question.text,
+    text: question.question,
     responses: Object.entries(question.answers).map(([answerKey, answerText]) => ({
       text: answerText,
-      correct: false, // Логика для определения правильного ответа на основе answerKey (если имеется)
+      correct: question.correct_answer, // Логика для определения правильного ответа на основе answerKey (если имеется)
     })),
   }));
   console.log(formattedQuestions);

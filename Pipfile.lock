@@ -179,11 +179,11 @@
         },
         "email-validator": {
             "hashes": [
-                "sha256:200a70680ba08904be6d1eef729205cc0d687634399a5924d842533efb824b84",
-                "sha256:97d882d174e2a65732fb43bfce81a3a834cbc1bde8bf419e30ef5ea976370a05"
+                "sha256:14c0f3d343c4beda37400421b39fa411bbe33a75df20825df73ad53e06a9f04c",
+                "sha256:d89f6324e13b1e39889eab7f9ca2f91dc9aebb6fa50a6d8bd4329ab50f251115"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.1.1"
+            "version": "==2.1.2"
         },
         "fastapi": {
             "extras": [
@@ -529,10 +529,10 @@
         },
         "pydantic-extra-types": {
             "hashes": [
-                "sha256:c7cabe403234658207dcefed3489f2e8bfc8f4a8e305e7ab25ee29eceed65b39",
-                "sha256:ca3fce71ee46bc1043bdf3d0e3c149a09ab162cb305c4ed8c501a5034a592dd6"
+                "sha256:4d2b3c52c1e2e4dfa31bf1d5a37b841b09e3c5a08ec2bffca0e07fc2ad7d5c4a",
+                "sha256:f2400b3c3553fb7fa09a131967b4edf2d53f01ad9fa89d158784653f2e5c13d1"
             ],
-            "version": "==2.8.1"
+            "version": "==2.8.2"
         },
         "pydantic-settings": {
             "hashes": [
